@@ -36,6 +36,7 @@ public class Servidor {
         byte[] bytes;
         try {
             Socket clienteKardex = this.socketKardex.accept();
+            System.out.println("Se ha conectado el SistemaKardex");
             OutputStream outKardex=clienteKardex.getOutputStream();
             InputStream inKardex=clienteKardex.getInputStream();
             while (true) {
