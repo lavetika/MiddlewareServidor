@@ -32,11 +32,14 @@ public class Servidor {
     }
 
     protected void escuchar() {
+        System.out.println("El servidor esta en linea.");
+        System.out.println("----");
         Context context;
         byte[] bytes;
         try {
             Socket clienteKardex = this.socketKardex.accept();
             System.out.println("Se ha conectado el SistemaKardex");
+            System.out.println("----");
             OutputStream outKardex=clienteKardex.getOutputStream();
             InputStream inKardex=clienteKardex.getInputStream();
             while (true) {
