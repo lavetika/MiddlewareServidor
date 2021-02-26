@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import server.Servidor;
+import server.ServidorAlumno;
 
 /**
  *
@@ -18,7 +18,7 @@ public class ServerStart {
      */
     public static void main(String[] args) {
         try {
-            new Servidor(new ServerSocket(9000), new ServerSocket(9001));
+            new ServidorAlumno(new ServerSocket(9000), new ServerSocket(9001));
         } catch (Exception ex) {
             Logger.getLogger(ServerStart.class.getName()).log(Level.SEVERE, null, ex);
         }

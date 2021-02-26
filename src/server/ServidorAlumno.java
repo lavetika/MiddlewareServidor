@@ -5,6 +5,7 @@ import interpreter.Context;
 import interpreter.IExpression;
 import interpreter.PuntosExpression;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,19 +17,21 @@ import java.nio.charset.StandardCharsets;
  *
  * @author Invitado
  */
-public class Servidor {
+public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
 
+    private static final byte DELIMITADOR = '~';
+    private static final int LONGITUD_ENTRADA = 25;
+    private static final int LONGITUD_SALIDA = 15;
     private final ServerSocket socketAlumno;
     private final ServerSocket socketKardex;
     private final IExpression interpreterKardex;
     private final IExpression interpreterAlumno;
 
-    public Servidor(ServerSocket socketAlumno, ServerSocket socketKardex) {
+    public ServidorAlumno(ServerSocket socketAlumno, ServerSocket socketKardex) {
         this.socketAlumno = socketAlumno;
         this.socketKardex = socketKardex;
         this.interpreterKardex = new PuntosExpression();
         this.interpreterAlumno = new ComasExpression();
-        escuchar();
     }
 
     protected void escuchar() {
@@ -40,8 +43,8 @@ public class Servidor {
             Socket clienteKardex = this.socketKardex.accept();
             System.out.println("Se ha conectado el SistemaKardex");
             System.out.println("----");
-            OutputStream outKardex=clienteKardex.getOutputStream();
-            InputStream inKardex=clienteKardex.getInputStream();
+            OutputStream outKardex = clienteKardex.getOutputStream();
+            InputStream inKardex = clienteKardex.getInputStream();
             while (true) {
                 Socket clienteAlumno = this.socketAlumno.accept();
                 //PARA EL SISTEMA ALUMNO
@@ -56,11 +59,12 @@ public class Servidor {
                 System.out.println("----");
 
                 context = new Context(recibidoAlumno);
-                
+
                 //PARA EL SISTEMA KARDEX
                 String paraKardex = interpreterKardex.interpret(context);
-                
-                outKardex.write(serializar(paraKardex));
+
+                //   outKardex.write(serializar(paraKardex));
+                frameMsgDelimiter(serializar(paraKardex), outKardex);
                 System.out.println("Se ha enviado " + paraKardex + " al Sistema Kardex");
                 System.out.println("----");
                 outKardex.flush();
@@ -78,7 +82,7 @@ public class Servidor {
                 outAlumno.write(serializar(paraAlumno));
                 System.out.println("Se ha enviado " + paraAlumno + " al Sistema Alumno");
                 System.out.println("----");
-                
+
                 outAlumno.flush();
                 outAlumno.close();
                 inAlumno.close();
@@ -107,5 +111,57 @@ public class Servidor {
             }
         }
         return tam;
+    }
+
+    @Override
+    public void frameMsgDelimiter(byte[] mensaje, OutputStream out) throws IOException {
+        for (byte b : mensaje) {
+            if (b == DELIMITADOR) {
+                throw new IOException("El mensaje contiene el delimitador.");
+            }
+        }
+        out.write(mensaje);
+        out.write(DELIMITADOR);
+        out.flush();
+    }
+
+    @Override
+    public byte[] nextMsgDelimiter(InputStream in) throws IOException {
+        ByteArrayOutputStream msgBuffer = new ByteArrayOutputStream();
+        int sigByte;
+
+        while ((sigByte = in.read()) != DELIMITADOR) {
+            if (sigByte == -1) {
+                if (msgBuffer.size() == 0) {
+                    return null;
+                } else {
+                    throw new IOException("Mensaje sin delimitador.");
+                }
+            }
+            msgBuffer.write(sigByte);
+        }
+        return msgBuffer.toByteArray();
+    }
+
+    @Override
+    public void frameMsgLength(byte[] mensaje, OutputStream out) throws IOException {
+        if (mensaje.length != LONGITUD_SALIDA) {
+            throw new IOException("El tamaño del mensaje no es de la longitud establecida: " + LONGITUD_SALIDA);
+        }
+
+        out.write(mensaje);
+        out.flush();
+    }
+
+    @Override
+    public byte[] nextMsgLength(InputStream in) throws IOException {
+        byte[] salida = new byte[LONGITUD_ENTRADA];
+        in.read(salida);
+        return salida;
+    }
+
+    @Override
+    public void run() {
+        escuchar();
     }
 }
