@@ -5,6 +5,7 @@
  */
 package server;
 
+import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,6 +15,6 @@ import java.io.OutputStream;
  * @author Invitado
  */
 public interface FramerJson{
-    public void frameMsgJson(byte[] message, OutputStream out) throws IOException;
+    public void frameMsgJson(JsonObject message, OutputStream out) throws IOException;
     public byte[] nextMsgJson(InputStream in) throws IOException;
 }

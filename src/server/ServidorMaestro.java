@@ -1,5 +1,6 @@
 package server;
 
+import com.google.gson.JsonObject;
 import interpreter.ComasExpression;
 import interpreter.Context;
 import interpreter.IExpression;
@@ -18,7 +19,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @author Invitado
  */
-public class ServidorProfesor implements FramerJson, FramerDelimiter, Runnable {
+public class ServidorMaestro implements FramerJson, FramerDelimiter, Runnable {
 
     private static final byte DELIMITADOR = '~';
     private final ServerSocket socketProfesor;
@@ -26,7 +27,7 @@ public class ServidorProfesor implements FramerJson, FramerDelimiter, Runnable {
     private final IExpression interpreterKardex;
     private final IExpression interpreterProfesor;
 
-    public ServidorProfesor(ServerSocket socketProfesor, ServerSocket socketKardex) {
+    public ServidorMaestro(ServerSocket socketProfesor, ServerSocket socketKardex) {
         this.socketProfesor = socketProfesor;
         this.socketKardex = socketKardex;
         this.interpreterKardex = new PuntosExpression();
@@ -144,7 +145,7 @@ public class ServidorProfesor implements FramerJson, FramerDelimiter, Runnable {
     
     
     @Override
-    public void frameMsgJson(byte[] message, OutputStream out) throws IOException {
+    public void frameMsgJson(JsonObject message, OutputStream out) throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

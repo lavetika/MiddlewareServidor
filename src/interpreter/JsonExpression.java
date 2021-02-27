@@ -1,14 +1,26 @@
 package interpreter;
 
+import com.google.gson.JsonObject;
+
 /**
  *
  * @author Invitado
  */
 public class JsonExpression implements IExpression{
 
-    @Override
+  @Override
     public String interpret(Context context) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        JsonObject in=context.getJson();
+        String out="";
+//        in.get("maestro").toString();
+//        in.get("materia").toString();
+//        in.get("alumno").toString();
+//        in.get("calificacion").toString();
+        
+        out=in.get("maestro").toString()+ in.get("materia").toString()+
+                in.get("alumno").toString()+in.get("calificacion").toString();
+        
+        return out;
     }
     
 }

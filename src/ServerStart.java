@@ -18,7 +18,7 @@ public class ServerStart {
      */
     public static void main(String[] args) {
         try {
-            new ServidorAlumno(new ServerSocket(9000), new ServerSocket(9001));
+            new ServidorAlumno(new ServerSocket(9000), new ServerSocket(9001)).run();
         } catch (Exception ex) {
             Logger.getLogger(ServerStart.class.getName()).log(Level.SEVERE, null, ex);
         }
