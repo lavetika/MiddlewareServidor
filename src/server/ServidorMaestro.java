@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import interpreter.ComasExpression;
 import interpreter.Context;
 import interpreter.IExpression;
+import interpreter.IExpressionJson;
 import interpreter.JsonExpression;
 import interpreter.PuntosExpression;
 import java.io.BufferedInputStream;
@@ -25,13 +26,13 @@ public class ServidorMaestro implements FramerJson, FramerDelimiter, Runnable {
     private final ServerSocket socketProfesor;
     private final ServerSocket socketKardex;
     private final IExpression interpreterKardex;
-    private final IExpression interpreterProfesor;
+    private final IExpressionJson interpreterMaestro;
 
     public ServidorMaestro(ServerSocket socketProfesor, ServerSocket socketKardex) {
         this.socketProfesor = socketProfesor;
         this.socketKardex = socketKardex;
         this.interpreterKardex = new PuntosExpression();
-        this.interpreterProfesor = new JsonExpression();
+        this.interpreterMaestro = new JsonExpression();
     }
 
     protected void escuchar() {
@@ -69,22 +70,22 @@ public class ServidorMaestro implements FramerJson, FramerDelimiter, Runnable {
                 System.out.println("----");
                 outKardex.flush();
 
-                bytes = new byte[esperarDatos(inKardex)];
-                inKardex.read(bytes);
-                String recibidoKardex = deserializar(bytes);
-                System.out.println("Recibido del Sistema Kardex");
-                System.out.println("Sistema Kardex envía: " + recibidoKardex);
-                System.out.println("----");
-
-                context = new Context(recibidoKardex);
-                String paraProfesor = interpreterProfesor.interpret(context);
-                OutputStream outProfesor = clienteProfesor.getOutputStream();
-                outProfesor.write(serializar(paraProfesor));
-                System.out.println("Se ha enviado " + paraProfesor + " al Sistema Profesor");
-                System.out.println("----");
-
-                outProfesor.flush();
-                outProfesor.close();
+//                bytes = new byte[esperarDatos(inKardex)];
+//                inKardex.read(bytes);
+//                String recibidoKardex = deserializar(bytes);
+//                System.out.println("Recibido del Sistema Kardex");
+//                System.out.println("Sistema Kardex envía: " + recibidoKardex);
+//                System.out.println("----");
+//
+//                context = new Context(recibidoKardex);
+//                String paraProfesor = interpreterMaestro.interpret(context);
+//                OutputStream outProfesor = clienteProfesor.getOutputStream();
+//                outProfesor.write(serializar(paraProfesor));
+//                System.out.println("Se ha enviado " + paraProfesor + " al Sistema Profesor");
+//                System.out.println("----");
+//
+//                outProfesor.flush();
+//                outProfesor.close();
                 inProfesor.close();
                 clienteProfesor.close();
             }
