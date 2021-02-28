@@ -2,6 +2,7 @@ package server;
 
 import interpreter.ComasExpression;
 import interpreter.Context;
+import interpreter.TipoContexto;
 import interpreter.IExpression;
 import interpreter.PuntosExpression;
 import java.io.BufferedInputStream;
@@ -24,6 +25,7 @@ public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
     private static final int LONGITUD_SALIDA = 15;
     private final ServerSocket socketAlumno;
     private final ServerSocket socketKardex;
+    private Socket clienteKardex;
     private final IExpression interpreterKardex;
     private final IExpression interpreterAlumno;
 
@@ -40,7 +42,9 @@ public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
         Context context;
         byte[] bytes;
         try {
-            Socket clienteKardex = this.socketKardex.accept();
+            clienteKardex = this.socketKardex.accept();
+            ServidorMaestro sMaestro=new ServidorMaestro(new ServerSocket(9002), clienteKardex);
+            new Thread(sMaestro).start();
             System.out.println("Se ha conectado el SistemaKardex");
             System.out.println("----");
             OutputStream outKardex = clienteKardex.getOutputStream();
@@ -58,7 +62,7 @@ public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
                 System.out.println("Sistema Alumno envía: " + recibidoAlumno);
                 System.out.println("----");
 
-                context = new Context(recibidoAlumno);
+                context = new Context(recibidoAlumno, TipoContexto.COMAS);
 
                 //PARA EL SISTEMA KARDEX
                 String paraKardex = interpreterKardex.interpret(context);
@@ -76,7 +80,7 @@ public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
                 System.out.println("Sistema Kardex envía: " + recibidoKardex);
                 System.out.println("----");
 
-                context = new Context(recibidoKardex);
+                context = new Context(recibidoKardex, TipoContexto.PUNTOS);
                 String paraAlumno = interpreterAlumno.interpret(context);
                 OutputStream outAlumno = clienteAlumno.getOutputStream();
                 outAlumno.write(serializar(paraAlumno));
@@ -111,6 +115,10 @@ public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
             }
         }
         return tam;
+    }
+
+    public Socket getClienteKardex() {
+        return clienteKardex;
     }
 
     @Override
