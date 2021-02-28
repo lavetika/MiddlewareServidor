@@ -20,13 +20,13 @@ import java.nio.charset.StandardCharsets;
 public class ServidorMaestro implements FramerJson, FramerDelimiter, Runnable {
 
     private static final byte DELIMITADOR = '~';
-    private final ServerSocket socketProfesor;
+    private final ServerSocket socketMaestro;
     private final Socket clienteKardex;
     private final IExpression interpreterKardex;
 
-    public ServidorMaestro(ServerSocket socketProfesor, Socket clienteKardex) {
-        this.socketProfesor = socketProfesor;
-        this.clienteKardex=clienteKardex;
+    public ServidorMaestro(ServerSocket socketMaestro, Socket clienteKardex) {
+        this.socketMaestro = socketMaestro;
+        this.clienteKardex = clienteKardex;
         this.interpreterKardex = new PuntosExpression();
     }
 
@@ -34,37 +34,31 @@ public class ServidorMaestro implements FramerJson, FramerDelimiter, Runnable {
         System.out.println("Se está escuchando al sistema maestro.");
         System.out.println("----");
         Context context;
-        byte[] bytes;
         try {
             OutputStream outKardex = clienteKardex.getOutputStream();
             while (true) {
-                Socket clienteProfesor = this.socketProfesor.accept();
+                Socket clienteMaestro = this.socketMaestro.accept();
                 System.out.println("Se ha conectado el Sistema Maestro");
                 //PARA EL SISTEMA MAESTRO
-                InputStream inProfesor = new BufferedInputStream(clienteProfesor.getInputStream());
+                InputStream inMaestro = new BufferedInputStream(clienteMaestro.getInputStream());
 
-                bytes = new byte[esperarDatos(inProfesor)];
-                inProfesor.read(bytes);
+                String recibidoMaestro = deserializar(nextMsgJson(inMaestro));
 
-                String recibidoProfesor = deserializar(bytes);
+                context = new Context(recibidoMaestro, TipoContexto.JSON);
 
-                context = new Context(recibidoProfesor, TipoContexto.JSON);
-
-                System.out.println("Recibido del Sistema Profesor");
-                System.out.println("Sistema Profesor envía: " + recibidoProfesor);
+                System.out.println("Recibido del Sistema Maestro");
+                System.out.println("Sistema Maestro envía: " + recibidoMaestro);
                 System.out.println("----");
 
                 //PARA EL SISTEMA KARDEX
-                String paraKardex = interpreterKardex.interpret(context);
+                String paraKardex = "maestro." + interpreterKardex.interpret(context);
 
-                outKardex.write(serializar(paraKardex));
                 frameMsgDelimiter(serializar(paraKardex), outKardex);
                 System.out.println("Se ha enviado " + paraKardex + " al Sistema Kardex");
                 System.out.println("----");
-                outKardex.flush();
 
-                inProfesor.close();
-                clienteProfesor.close();
+                inMaestro.close();
+                clienteMaestro.close();
             }
 
         } catch (Exception e) {
@@ -123,7 +117,9 @@ public class ServidorMaestro implements FramerJson, FramerDelimiter, Runnable {
 
     @Override
     public byte[] nextMsgJson(InputStream in) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        byte[] bytes = new byte[esperarDatos(in)];
+        in.read(bytes);
+        return bytes;
     }
 
     @Override

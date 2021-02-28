@@ -21,8 +21,8 @@ import java.nio.charset.StandardCharsets;
 public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
 
     private static final byte DELIMITADOR = '~';
-    private static final int LONGITUD_ENTRADA = 25;
-    private static final int LONGITUD_SALIDA = 15;
+    private static final int LONGITUD_ENTRADA = 15;
+    private static final int LONGITUD_SALIDA = 25;
     private final ServerSocket socketAlumno;
     private final ServerSocket socketKardex;
     private Socket clienteKardex;
@@ -54,10 +54,7 @@ public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
                 //PARA EL SISTEMA ALUMNO
                 InputStream inAlumno = new BufferedInputStream(clienteAlumno.getInputStream());
 
-                bytes = new byte[esperarDatos(inAlumno)];
-                inAlumno.read(bytes);
-
-                String recibidoAlumno = deserializar(bytes);
+                String recibidoAlumno = deserializar(nextMsgLength(inAlumno));
                 System.out.println("Recibido del Sistema Alumno");
                 System.out.println("Sistema Alumno envía: " + recibidoAlumno);
                 System.out.println("----");
@@ -65,17 +62,15 @@ public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
                 context = new Context(recibidoAlumno, TipoContexto.COMAS);
 
                 //PARA EL SISTEMA KARDEX
-                String paraKardex = interpreterKardex.interpret(context);
+                String paraKardex = "alumno."+interpreterKardex.interpret(context);
 
                 //   outKardex.write(serializar(paraKardex));
                 frameMsgDelimiter(serializar(paraKardex), outKardex);
                 System.out.println("Se ha enviado " + paraKardex + " al Sistema Kardex");
                 System.out.println("----");
-                outKardex.flush();
-
-                bytes = new byte[esperarDatos(inKardex)];
-                inKardex.read(bytes);
-                String recibidoKardex = deserializar(bytes);
+                
+                
+                String recibidoKardex = deserializar(nextMsgDelimiter(inKardex));
                 System.out.println("Recibido del Sistema Kardex");
                 System.out.println("Sistema Kardex envía: " + recibidoKardex);
                 System.out.println("----");
@@ -83,11 +78,10 @@ public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
                 context = new Context(recibidoKardex, TipoContexto.PUNTOS);
                 String paraAlumno = interpreterAlumno.interpret(context);
                 OutputStream outAlumno = clienteAlumno.getOutputStream();
-                outAlumno.write(serializar(paraAlumno));
+                frameMsgLength(serializar(paraAlumno), outAlumno);
                 System.out.println("Se ha enviado " + paraAlumno + " al Sistema Alumno");
                 System.out.println("----");
-
-                outAlumno.flush();
+                
                 outAlumno.close();
                 inAlumno.close();
                 clienteAlumno.close();
@@ -163,9 +157,9 @@ public class ServidorAlumno implements FramerLength, FramerDelimiter, Runnable {
 
     @Override
     public byte[] nextMsgLength(InputStream in) throws IOException {
-        byte[] salida = new byte[LONGITUD_ENTRADA];
-        in.read(salida);
-        return salida;
+        byte[] entrada = new byte[LONGITUD_ENTRADA];
+        in.read(entrada);
+        return entrada;
     }
 
     @Override

@@ -27,8 +27,8 @@ public class PuntosExpression implements IExpression {
             case JSON:
                 JSONObject json = new JSONObject(in);
                 
-                out = json.getString("maestro").toString() + "." + json.getString("materia")+ "."
-                        + json.getString("alumno").toString() + "." + json.getString("calificacion").toString();
+                out = json.getString("maestro") + "." + json.getString("materia")+ "."
+                        + json.getString("alumno") + "." + json.getString("calificacion");
                 break;
         }
 
