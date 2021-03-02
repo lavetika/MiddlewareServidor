@@ -16,9 +16,9 @@ public class ComasExpression implements IExpression {
                 String[] elementos = in.split("\\.");
 
                 for (String elemento : elementos) {
-                    out += elemento + ",";
+                    out += elemento;
                 }
-                out = out.substring(0, out.length() - 1);
+
                 break;
         }
         return out;
